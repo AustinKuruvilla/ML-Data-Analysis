@@ -1,23 +1,53 @@
-name: Python package - ML Data Analysis CI
+name: Python Tests - ML Data Analysis
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
 
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.10, 3.11]
+        python-version: ["3.10", "3.11", "3.12"]
+    
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+      
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest
-      - name: Run tests
-        run: pytest -q
+          pip install pytest pytest-cov
+      
+      - name: Verify imports
+        run: |
+          python -c "import src.analysis; print('✓ src.analysis imported successfully')"
+          python -c "import streamlit; print('✓ streamlit imported successfully')"
+      
+      - name: Run tests with coverage
+        run: |
+          pytest tests/ -v --cov=src --cov-report=xml
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
