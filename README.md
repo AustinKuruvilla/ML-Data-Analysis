@@ -50,6 +50,9 @@ streamlit run streamlit_app.py
 
 **Python 3.7+** with scikit-learn, pandas, numpy, matplotlib, seaborn, jupyter
 
+
+## Output
+[ML Data Analysis](https://austinkuruvilla-ml-data-analysis-streamlit-app-limzig.streamlit.app/)
 ## 🧪 Testing
 
 ```bash
